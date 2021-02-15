@@ -1,62 +1,12 @@
-from flask import Flask, request
+from flask import Flask, request, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from datetime import datetime
+from config import Config, DevelopmentConfig
+from models import db, Usuario, Restaurante
+from schemas import ma, EsquemaUsuario, EsquemaRestaurante
 
 app = Flask(__name__)
-
-#Conexión base de datos MySQL
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root@localhost/db_restaurante'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-ma = Marshmallow(app)
-
-class Usuario(db.Model):
-    usuario_id = db.Column(db.Integer, primary_key = True)
-    email = db.Column(db.String(30), unique=True, nullable = False)
-    contraseña = db.Column(db.String(30), nullable = False)
-
-    def __init__(self, email, contraseña):
-        self.email = email
-        self.contraseña = contraseña
-
-class Restaurante(db.Model):
-    restaurante_id = db.Column(db.Integer, primary_key = True)
-    nombre_restaurante = db.Column(db.String(50), nullable = False)
-    lugar = db.Column(db.String(40), nullable = False)
-    direccion = db.Column(db.String(50), nullable = False)
-    telefono = db.Column(db.BigInteger, nullable= False)
-    categoria = db.Column(db.String(14), nullable = False)
-    domicilio = db.Column(db.Boolean, nullable = False)
-    fecha_creacion = db.Column(db.Date, nullable = False)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.usuario_id'), nullable = False)
-    usuario = db.relationship('Usuario')
-
-    def __init__(self, nombre, lugar, direccion, telefono, categoria, domicilio, usuario_id):
-        self.nombre_restaurante = nombre
-        self.lugar = lugar
-        self.direccion = direccion
-        self.telefono = telefono
-        self.categoria = categoria
-        self.domicilio = domicilio
-        self.fecha_creacion = datetime.now()
-        self.usuario_id = usuario_id
-
-db.create_all()
-
-class EsquemaUsuario(ma.Schema):
-    class Meta:
-        campos = ('usuario_id', 'email', 'contraseña')
-
-class EsquemaRestaurante(ma.Schema):
-    class Meta:
-        campos = ('restaurante_id','nombre_restaurante','lugar',
-        'direccion','telefono','categoria','domicilio','fecha_creacion',
-        'usuario_id')
-
-UserSchema = EsquemaUsuario()
-RestaurantSchema = EsquemaRestaurante()
+app.config.from_object(DevelopmentConfig)
 
 @app.route('/registro', methods = ['POST'])
 def registrar():
@@ -68,4 +18,10 @@ def registrar():
     return UserSchema.jsonify(new_user)
 
 if __name__ == '__main__':
+    db.init_app(app)
+    ma.init_app(app)
+    with app.app_context():
+        db.create_all()
+    UserSchema = EsquemaUsuario()
+    RestaurantSchema = EsquemaRestaurante()
     app.run(debug=True)
