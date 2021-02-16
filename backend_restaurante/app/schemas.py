@@ -11,3 +11,8 @@ class EsquemaRestaurante(ma.Schema):
         campos = ('restaurante_id','nombre_restaurante','lugar',
         'direccion','telefono','categoria','domicilio','fecha_creacion',
         'usuario_id')
+
+user_schema = EsquemaUsuario()
+users_schemas = EsquemaUsuario(many=True)
+restaurant_schema = EsquemaRestaurante()
+restaurants_schema = EsquemaRestaurante(many=True)
