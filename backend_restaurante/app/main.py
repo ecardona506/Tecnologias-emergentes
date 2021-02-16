@@ -20,20 +20,6 @@ def registrar():
     db.session.commit()
     return UserSchema.jsonify(new_user)
 
-@app.route('/crear_restaurante', methods = ['POST'])
-def crear_restaurante():
-    if "usuario" in session:
-        nombre = request.json['nombre_restuarante']
-        lugar = request.json['lugar']
-        direccion = request.json['direccion']
-        telefono = request.json['categoria']
-        domicilio = request.json['domicilio']
-        usuario_id = session['usuario']
-        new_restaurant = Restaurante(nombre, lugar, direccion, telefono, domicilio, usuario_id)
-        db.session.add(new_restaurant)
-        db.commit()
-        return "Restaurante agregado satisfactoriamente"
-
 if __name__ == '__main__':
     db.init_app(app)
     ma.init_app(app)
